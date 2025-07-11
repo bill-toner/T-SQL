@@ -41,3 +41,20 @@ Alter Table dbo.Orders
   Add Constraint  FK_Orders_Employees
   Foreign Key(EmpID)
   References  dbo.Employees(EmpID);
+
+Alter Table dbo.Employees
+  Add Constraint FK_Employees_Employees
+  Foreign Key(MgrID)
+  References dbo.Employees(EmpID);
+
+-- Check Constraints
+Alter Table dbo.Employees
+  Add Constraint  CHK_Employees_salary
+  Check(Salary > 0.00);
+
+-- Default Constraints
+Alter Table dbo.Orders
+  Add Constraint DFT_Orders_orderts
+  Default(SysDateTime()) For OrderTS;
+
+-- Drop Table If Exists dbo.Orders, dbo.Employees;
