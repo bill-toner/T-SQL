@@ -74,8 +74,8 @@ Select
   , custid
   , orderdate
   , shippeddate
-  , Last_Value(shippeddate) Ignore Nulls -- alternately use Lag
-       Over(Partition by custid Order by orderdate, orderid Rows Unbounded Preceding) 'LastKnownShippedDate'
+  , Last_Value(shippeddate) Ignore Nulls 
+      Over(Partition by custid Order by orderdate, orderid Rows Unbounded Preceding) 'LastKnownShippedDate'
 From Sales.Orders
 Where custid in (9, 20, 32, 73)
  and orderdate >= '20220101'
@@ -84,4 +84,53 @@ Order By custid, orderdate, orderid
 
 /*
   Aggregate Window Functions
+  -- Window functions allow you to mix detail and aggregates
 */
+
+Select 
+  orderid
+  , custid
+  , val
+  , Sum(val) Over() 'totalvalue'
+  , Sum(val) Over(Partition by custid) 'custtotalvalue'
+From Sales.OrderValues
+;
+
+Select 
+  orderid
+  , custid
+  , val
+  , 100. * val / Sum(val) Over() 'pctall'
+  , 100. * val / Sum(val) Over(Partition by custid) 'pctcust'
+From Sales.OrderValues
+;
+
+Select 
+  empid
+  , ordermonth
+  , val
+  , Sum(val) Over(Partition by empid
+				  Order by ordermonth
+				  Rows between Unbounded Preceding and Current Row) 'runval'
+From Sales.EmpOrders
+;
+
+/*
+  The Window Clause
+    allows you to have identical window functions using the same window spec
+*/
+
+Select 
+  empid
+  , ordermonth
+  , val
+  , Sum(val) Over W 'runsum'
+  , Min(val) Over W 'runmin'
+  , Max(val) Over W 'runmax'
+  , Avg(val) Over W 'runavg'
+From Sales.EmpOrders
+Window W as (Partition by empid
+	         Order by ordermonth
+			 Rows between Unbounded Preceding and Current Row)
+;
+
