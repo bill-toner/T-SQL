@@ -36,3 +36,26 @@ Select
 From (Select custid, empid, qty
       From dbo.Orders) D
 Pivot(Sum(qty) For empid in ([1], [2], [3])) P;
+
+/*
+  Unpivoting Data
+*/
+
+Select * From dbo.EmpCustOrders;
+
+-- Unpivoting with Apply: producing copies, extracting values, eliminating irrelevant rows
+Select 
+  empid
+  , custid
+  , qty
+From dbo.EmpCustOrders
+  Cross Apply (Values ('A', A), ('B', B), ('C', C), ('D', D)) as C(custid, qty)
+Where qty Is Not Null;
+
+-- Unpivoting with Unpivot: produces two result colums from any number of source columns
+Select 
+  empid
+  , custid
+  , qty
+From dbo.EmpCustOrders
+  Unpivot(qty For custid in (A, B, C, D)) as U;
